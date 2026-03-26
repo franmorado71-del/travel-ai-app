@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Travel AI</title>
+
+<style>
+body {
+    font-family: Arial;
+    background-color: #f5f7fa;
+    padding: 40px;
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+}
+
+input, select, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.resultado {
+    border-left: 5px solid #3498db;
+    background: #ecf5ff;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}
+
+.panel {
+    background:#f0f8ff;
+    padding:15px;
+    border-radius:8px;
+    margin-bottom:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🌍 Travel AI</h1>
+
+<!-- 👤 PANEL USUARIO -->
+<div id="panel_usuario" class="panel">
+    <b>👤 Usuario:</b> <span id="user_email">-</span><br>
+    <b>💼 Plan:</b> <span id="user_plan">-</span><br>
+    <b>📊 Consultas:</b> <span id="user_consultas">-</span>
+</div>
+
+<!-- REGISTRO -->
+<h3>Registro</h3>
+<input type="email" id="reg_email" placeholder="Email">
+<input type="password" id="reg_password" placeholder="Contraseña">
+<button onclick="registro()">Crear cuenta</button>
+<p id="reg_msg"></p>
+
+<hr>
+
+<!-- LOGIN -->
+<h3>Login</h3>
+<input type="email" id="login_email" placeholder="Email">
+<input type="password" id="login_password" placeholder="Contraseña">
+<button onclick="login()">Iniciar sesión</button>
+<p id="login_msg"></p>
+
+<button onclick="logout()">Cerrar sesión</button>
+
+<!-- 💳 BOTÓN PAGO -->
+<button onclick="comprarPro()">💳 Comprar PRO (9.99€)</button>
+<p id="pago_msg"></p>
+
+<hr>
+
+<!-- BUSCADOR -->
+<h3>Buscar viaje</h3>
+
+<input type="number" id="presupuesto" placeholder="Presupuesto (€)">
+
+<select id="tipo">
+    <option value="playa">Playa</option>
+    <option value="cultura">Cultura</option>
+    <option value="aventura">Aventura</option>
+    <option value="fiesta">Fiesta</option>
+    <option value="naturaleza">Naturaleza</option>
+    <option value="relax">Relax</option>
+</select>
+
+<button onclick="buscar()">Buscar destino</button>
+
+<p id="uso"></p>
+<p id="error" class="error"></p>
+
+<div id="resultados"></div>
+
+</div>
+
+<script>
+
+let usuario_logueado = null;
+
+
+// 🔁 RECUPERAR SESIÓN
+window.onload = function() {
+    let usuario_guardado = localStorage.getItem("usuario");
+
+    if (usuario_guardado) {
+        usuario_logueado = usuario_guardado;
+        document.getElementById("login_msg").innerHTML = "✅ Sesión recuperada";
+        cargarPerfil();
+    }
+};
+
+
+// 👤 CARGAR PERFIL
+async function cargarPerfil() {
+
+    if (!usuario_logueado) return;
+
+    try {
+        let res = await fetch(`http://127.0.0.1:8000/perfil?email=${usuario_logueado}`);
+        let data = await res.json();
+
+        document.getElementById("user_email").innerHTML = data.email;
+        document.getElementById("user_plan").innerHTML = data.plan.toUpperCase();
+        document.getElementById("user_consultas").innerHTML = data.consultas;
+
+    } catch (e) {
+        console.log("Error cargando perfil");
+    }
+}
+
+
+// 🔐 REGISTRO
+async function registro() {
+
+    let email = document.getElementById("reg_email").value;
+    let password = document.getElementById("reg_password").value;
+    let msg = document.getElementById("reg_msg");
+
+    msg.innerHTML = "";
+
+    if (!email || !password) {
+        msg.innerHTML = "❌ Completa todos los campos";
+        return;
+    }
+
+    try {
+        let res = await fetch(`http://127.0.0.1:8000/registro?email=${email}&password=${password}`, {
+            method: "POST"
+        });
+
+        let data = await res.json();
+
+        if (data.detail) {
+            msg.innerHTML = "❌ " + data.detail;
+            return;
+        }
+
+        msg.innerHTML = "✅ Usuario creado";
+
+        document.getElementById("login_email").value = email;
+        document.getElementById("login_password").value = password;
+
+    } catch (e) {
+        msg.innerHTML = "❌ Error de conexión";
+    }
+}
+
+
+// 🔐 LOGIN
+async function login() {
+
+    let email = document.getElementById("login_email").value;
+    let password = document.getElementById("login_password").value;
+    let msg = document.getElementById("login_msg");
+
+    msg.innerHTML = "";
+
+    try {
+        let res = await fetch(`http://127.0.0.1:8000/login?email=${email}&password=${password}`, {
+            method: "POST"
+        });
+
+        let data = await res.json();
+
+        if (data.detail) {
+            msg.innerHTML = "❌ " + data.detail;
+            return;
+        }
+
+        usuario_logueado = data.usuario.email;
+        localStorage.setItem("usuario", usuario_logueado);
+
+        msg.innerHTML = "✅ Login correcto";
+
+        cargarPerfil();
+
+    } catch (e) {
+        msg.innerHTML = "❌ Error de conexión";
+    }
+}
+
+
+// 🔓 LOGOUT
+function logout() {
+    localStorage.removeItem("usuario");
+    usuario_logueado = null;
+
+    document.getElementById("login_msg").innerHTML = "Sesión cerrada";
+
+    document.getElementById("user_email").innerHTML = "-";
+    document.getElementById("user_plan").innerHTML = "-";
+    document.getElementById("user_consultas").innerHTML = "-";
+}
+
+
+// 💳 PAGO
+async function comprarPro() {
+
+    let msg = document.getElementById("pago_msg");
+    msg.innerHTML = "";
+
+    if (!usuario_logueado) {
+        msg.innerHTML = "❌ Debes iniciar sesión";
+        return;
+    }
+
+    msg.innerHTML = "💳 Procesando pago...";
+
+    setTimeout(async () => {
+
+        try {
+            await fetch(`http://127.0.0.1:8000/upgrade?email=${usuario_logueado}`, {
+                method: "POST"
+            });
+
+            msg.innerHTML = "✅ Ahora eres PRO 🚀";
+
+            cargarPerfil();
+
+        } catch (e) {
+            msg.innerHTML = "❌ Error en el pago";
+        }
+
+    }, 2000);
+}
+
+
+// 🔍 BUSCAR
+async function buscar() {
+
+    let presupuesto = document.getElementById("presupuesto").value;
+    let tipo = document.getElementById("tipo").value;
+
+    let resultados = document.getElementById("resultados");
+    let error = document.getElementById("error");
+    let uso = document.getElementById("uso");
+
+    resultados.innerHTML = "";
+    error.innerHTML = "";
+    uso.innerHTML = "";
+
+    if (!usuario_logueado) {
+        error.innerHTML = "Debes iniciar sesión primero";
+        return;
+    }
+
+    try {
+        let res = await fetch(`http://127.0.0.1:8000/recomendar?presupuesto=${presupuesto}&tipo=${tipo}&email=${usuario_logueado}`);
+        let data = await res.json();
+
+        if (data.error) {
+            error.innerHTML = data.error;
+            return;
+        }
+
+        if (data.plan === "free") {
+            uso.innerHTML = `Consultas: ${data.consultas_usadas}/3`;
+        } else {
+            uso.innerHTML = "🚀 Usuario PRO";
+        }
+
+        data.recomendaciones.forEach(d => {
+            resultados.innerHTML += `
+                <div class="resultado">
+                    <b>${d.ciudad}</b> (${d.pais})<br>
+                    Precio: ${d.precio_vuelo}€
+                </div>
+            `;
+        });
+
+        cargarPerfil();
+
+    } catch (e) {
+        error.innerHTML = "Error conectando con el servidor";
+    }
+}
+
+</script>
+
+</body>
+</html>

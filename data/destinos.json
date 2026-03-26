@@ -1,0 +1,37 @@
+[
+  {
+    "ciudad": "Lisboa",
+    "pais": "Portugal",
+    "tipo": ["cultura","fiesta"],
+    "clima": "templado",
+    "precio_vuelo": 90
+  },
+  {
+    "ciudad": "Marrakech",
+    "pais": "Marruecos",
+    "tipo": ["aventura","cultura"],
+    "clima": "calido",
+    "precio_vuelo": 110
+  },
+  {
+    "ciudad": "Malta",
+    "pais": "Malta",
+    "tipo": ["playa","fiesta"],
+    "clima": "calido",
+    "precio_vuelo": 140
+  },
+  {
+    "ciudad": "Reikiavik",
+    "pais": "Islandia",
+    "tipo": ["naturaleza","aventura"],
+    "clima": "frio",
+    "precio_vuelo": 250
+  },
+  {
+    "ciudad": "Roma",
+    "pais": "Italia",
+    "tipo": ["cultura","gastronomia"],
+    "clima": "templado",
+    "precio_vuelo": 120
+  }
+]
