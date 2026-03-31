@@ -31,10 +31,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 🔥 👉 SERVIR FRONTEND (CLAVE)
+# 🔥 👉 SERVIR FRONTEND (VERSIÓN ROBUSTA PARA RENDER)
 @app.get("/")
 def home():
-    ruta = os.path.join(BASE_DIR, "..", "frontend", "index.html")
+    ruta = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend", "index.html"))
+
+    # 👉 Debug útil si falla
+    if not os.path.exists(ruta):
+        return {
+            "error": "Frontend no encontrado",
+            "ruta_buscada": ruta
+        }
+
     return FileResponse(ruta)
 
 
@@ -87,6 +95,7 @@ def recomendar(presupuesto: int, tipo: str, email: str):
     }
 
 
+# 👉 Ejecutar en local
 import uvicorn
 
 if __name__ == "__main__":
