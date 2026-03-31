@@ -1,127 +1,6 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Travel AI</title>
-
-<style>
-body {
-    font-family: Arial;
-    background-color: #f5f7fa;
-    padding: 40px;
-}
-
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-}
-
-input, select, button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-
-button {
-    background-color: #3498db;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #2980b9;
-}
-
-.resultado {
-    border-left: 5px solid #3498db;
-    background: #ecf5ff;
-    padding: 15px;
-    margin-top: 10px;
-}
-
-.error {
-    color: red;
-    font-weight: bold;
-}
-
-.panel {
-    background:#f0f8ff;
-    padding:15px;
-    border-radius:8px;
-    margin-bottom:20px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<h1>🌍 Travel AI</h1>
-
-<!-- 👤 PANEL USUARIO -->
-<div id="panel_usuario" class="panel">
-    <b>👤 Usuario:</b> <span id="user_email">-</span><br>
-    <b>💼 Plan:</b> <span id="user_plan">-</span><br>
-    <b>📊 Consultas:</b> <span id="user_consultas">-</span>
-</div>
-
-<!-- REGISTRO -->
-<h3>Registro</h3>
-<input type="email" id="reg_email" placeholder="Email">
-<input type="password" id="reg_password" placeholder="Contraseña">
-<button onclick="registro()">Crear cuenta</button>
-<p id="reg_msg"></p>
-
-<hr>
-
-<!-- LOGIN -->
-<h3>Login</h3>
-<input type="email" id="login_email" placeholder="Email">
-<input type="password" id="login_password" placeholder="Contraseña">
-<button onclick="login()">Iniciar sesión</button>
-<p id="login_msg"></p>
-
-<button onclick="logout()">Cerrar sesión</button>
-
-<!-- 💳 BOTÓN PAGO -->
-<button onclick="comprarPro()">💳 Comprar PRO (9.99€)</button>
-<p id="pago_msg"></p>
-
-<hr>
-
-<!-- BUSCADOR -->
-<h3>Buscar viaje</h3>
-
-<input type="number" id="presupuesto" placeholder="Presupuesto (€)">
-
-<select id="tipo">
-    <option value="playa">Playa</option>
-    <option value="cultura">Cultura</option>
-    <option value="aventura">Aventura</option>
-    <option value="fiesta">Fiesta</option>
-    <option value="naturaleza">Naturaleza</option>
-    <option value="relax">Relax</option>
-</select>
-
-<button onclick="buscar()">Buscar destino</button>
-
-<p id="uso"></p>
-<p id="error" class="error"></p>
-
-<div id="resultados"></div>
-
-</div>
-
 <script>
+
+const API_URL = "https://travel-ai-app-lc7k.onrender.com";
 
 let usuario_logueado = null;
 
@@ -144,7 +23,7 @@ async function cargarPerfil() {
     if (!usuario_logueado) return;
 
     try {
-        let res = await fetch(`http://127.0.0.1:8000/perfil?email=${usuario_logueado}`);
+        let res = await fetch(`${API_URL}/perfil?email=${usuario_logueado}`);
         let data = await res.json();
 
         document.getElementById("user_email").innerHTML = data.email;
@@ -172,7 +51,7 @@ async function registro() {
     }
 
     try {
-        let res = await fetch(`http://127.0.0.1:8000/registro?email=${email}&password=${password}`, {
+        let res = await fetch(`${API_URL}/registro?email=${email}&password=${password}`, {
             method: "POST"
         });
 
@@ -204,7 +83,7 @@ async function login() {
     msg.innerHTML = "";
 
     try {
-        let res = await fetch(`http://127.0.0.1:8000/login?email=${email}&password=${password}`, {
+        let res = await fetch(`${API_URL}/login?email=${email}&password=${password}`, {
             method: "POST"
         });
 
@@ -257,7 +136,7 @@ async function comprarPro() {
     setTimeout(async () => {
 
         try {
-            await fetch(`http://127.0.0.1:8000/upgrade?email=${usuario_logueado}`, {
+            await fetch(`${API_URL}/upgrade?email=${usuario_logueado}`, {
                 method: "POST"
             });
 
@@ -293,7 +172,7 @@ async function buscar() {
     }
 
     try {
-        let res = await fetch(`http://127.0.0.1:8000/recomendar?presupuesto=${presupuesto}&tipo=${tipo}&email=${usuario_logueado}`);
+        let res = await fetch(`${API_URL}/recomendar?presupuesto=${presupuesto}&tipo=${tipo}&email=${usuario_logueado}`);
         let data = await res.json();
 
         if (data.error) {
@@ -324,6 +203,3 @@ async function buscar() {
 }
 
 </script>
-
-</body>
-</html>
