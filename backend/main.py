@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
 from backend.recomendador import recomendar_destinos
 from backend.auth import router as auth_router
@@ -30,10 +31,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 👉 Endpoint base
+# 🔥 👉 SERVIR FRONTEND (CLAVE)
 @app.get("/")
-def inicio():
-    return {"mensaje": "API de viajes con IA funcionando"}
+def home():
+    ruta = os.path.join(BASE_DIR, "..", "frontend", "index.html")
+    return FileResponse(ruta)
 
 
 # 🔥 FUNCIÓN PARA OBTENER PLAN DEL USUARIO
@@ -83,6 +85,8 @@ def recomendar(presupuesto: int, tipo: str, email: str):
         "plan": "pro",
         "recomendaciones": resultados
     }
+
+
 import uvicorn
 
 if __name__ == "__main__":
