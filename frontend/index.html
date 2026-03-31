@@ -36,10 +36,6 @@ button {
     cursor: pointer;
 }
 
-button:hover {
-    background-color: #2980b9;
-}
-
 .resultado {
     border-left: 5px solid #3498db;
     background: #ecf5ff;
@@ -67,50 +63,34 @@ button:hover {
 
 <h1>🌍 Travel AI</h1>
 
-<div id="panel_usuario" class="panel">
-    <b>👤 Usuario:</b> <span id="user_email">-</span><br>
-    <b>💼 Plan:</b> <span id="user_plan">-</span><br>
-    <b>📊 Consultas:</b> <span id="user_consultas">-</span>
+<div class="panel">
+    <b>Usuario:</b> <span id="user_email">-</span><br>
+    <b>Plan:</b> <span id="user_plan">-</span><br>
+    <b>Consultas:</b> <span id="user_consultas">-</span>
 </div>
 
 <h3>Registro</h3>
-<input type="email" id="reg_email" placeholder="Email">
-<input type="password" id="reg_password" placeholder="Contraseña">
+<input type="email" id="reg_email">
+<input type="password" id="reg_password">
 <button onclick="registro()">Crear cuenta</button>
 <p id="reg_msg"></p>
 
-<hr>
-
 <h3>Login</h3>
-<input type="email" id="login_email" placeholder="Email">
-<input type="password" id="login_password" placeholder="Contraseña">
-<button onclick="login()">Iniciar sesión</button>
+<input type="email" id="login_email">
+<input type="password" id="login_password">
+<button onclick="login()">Login</button>
 <p id="login_msg"></p>
 
-<button onclick="logout()">Cerrar sesión</button>
-
-<button onclick="comprarPro()">💳 Comprar PRO (9.99€)</button>
-<p id="pago_msg"></p>
-
-<hr>
-
-<h3>Buscar viaje</h3>
-
-<input type="number" id="presupuesto" placeholder="Presupuesto (€)">
+<h3>Buscar</h3>
+<input type="number" id="presupuesto">
 
 <select id="tipo">
-    <option value="playa">Playa</option>
-    <option value="cultura">Cultura</option>
-    <option value="aventura">Aventura</option>
-    <option value="fiesta">Fiesta</option>
-    <option value="naturaleza">Naturaleza</option>
-    <option value="relax">Relax</option>
+<option value="playa">Playa</option>
+<option value="cultura">Cultura</option>
+<option value="aventura">Aventura</option>
 </select>
 
-<button onclick="buscar()">Buscar destino</button>
-
-<p id="uso"></p>
-<p id="error" class="error"></p>
+<button onclick="buscar()">Buscar</button>
 
 <div id="resultados"></div>
 
@@ -118,199 +98,50 @@ button:hover {
 
 <script>
 
-https://travel-ai-app-lc7k.onrender.com
+const API_URL = "https://travel-ai-app-lc7k.onrender.com";
 
 let usuario_logueado = null;
 
-// 🔁 RECUPERAR SESIÓN
-window.onload = function() {
-    let usuario_guardado = localStorage.getItem("usuario");
-
-    if (usuario_guardado) {
-        usuario_logueado = usuario_guardado;
-        document.getElementById("login_msg").innerHTML = "✅ Sesión recuperada";
-        cargarPerfil();
-    }
-};
-
-// 👤 PERFIL
-async function cargarPerfil() {
-
-    if (!usuario_logueado) return;
-
-    try {
-        let res = await fetch(`${API_URL}/perfil?email=${usuario_logueado}`);
-        let data = await res.json();
-
-        document.getElementById("user_email").innerHTML = data.email;
-        document.getElementById("user_plan").innerHTML = data.plan.toUpperCase();
-        document.getElementById("user_consultas").innerHTML = data.consultas;
-
-    } catch (e) {
-        console.log("Error cargando perfil");
-    }
-}
-
-// 🔐 REGISTRO
+// REGISTRO
 async function registro() {
+    const email = document.getElementById("reg_email").value;
+    const password = document.getElementById("reg_password").value;
 
-    let email = document.getElementById("reg_email").value;
-    let password = document.getElementById("reg_password").value;
-    let msg = document.getElementById("reg_msg");
+    const res = await fetch(`${API_URL}/registro?email=${email}&password=${password}`, {
+        method: "POST"
+    });
 
-    msg.innerHTML = "";
-
-    if (!email || !password) {
-        msg.innerHTML = "❌ Completa todos los campos";
-        return;
-    }
-
-    try {
-        let res = await fetch(`${API_URL}/registro?email=${email}&password=${password}`, {
-            method: "POST"
-        });
-
-        let data = await res.json();
-
-        if (data.detail) {
-            msg.innerHTML = "❌ " + data.detail;
-            return;
-        }
-
-        msg.innerHTML = "✅ Usuario creado";
-
-        document.getElementById("login_email").value = email;
-        document.getElementById("login_password").value = password;
-
-    } catch (e) {
-        msg.innerHTML = "❌ Error de conexión";
-    }
+    const data = await res.json();
+    document.getElementById("reg_msg").innerText = JSON.stringify(data);
 }
 
-// 🔐 LOGIN
+// LOGIN
 async function login() {
+    const email = document.getElementById("login_email").value;
+    const password = document.getElementById("login_password").value;
 
-    let email = document.getElementById("login_email").value;
-    let password = document.getElementById("login_password").value;
-    let msg = document.getElementById("login_msg");
+    const res = await fetch(`${API_URL}/login?email=${email}&password=${password}`, {
+        method: "POST"
+    });
 
-    msg.innerHTML = "";
+    const data = await res.json();
 
-    try {
-        let res = await fetch(`${API_URL}/login?email=${email}&password=${password}`, {
-            method: "POST"
-        });
-
-        let data = await res.json();
-
-        if (data.detail) {
-            msg.innerHTML = "❌ " + data.detail;
-            return;
-        }
-
+    if (data.usuario) {
         usuario_logueado = data.usuario.email;
-        localStorage.setItem("usuario", usuario_logueado);
-
-        msg.innerHTML = "✅ Login correcto";
-
-        cargarPerfil();
-
-    } catch (e) {
-        msg.innerHTML = "❌ Error de conexión";
-    }
-}
-
-// 🔓 LOGOUT
-function logout() {
-    localStorage.removeItem("usuario");
-    usuario_logueado = null;
-
-    document.getElementById("login_msg").innerHTML = "Sesión cerrada";
-
-    document.getElementById("user_email").innerHTML = "-";
-    document.getElementById("user_plan").innerHTML = "-";
-    document.getElementById("user_consultas").innerHTML = "-";
-}
-
-// 💳 PAGO
-async function comprarPro() {
-
-    let msg = document.getElementById("pago_msg");
-    msg.innerHTML = "";
-
-    if (!usuario_logueado) {
-        msg.innerHTML = "❌ Debes iniciar sesión";
-        return;
     }
 
-    msg.innerHTML = "💳 Procesando pago...";
-
-    setTimeout(async () => {
-
-        try {
-            await fetch(`${API_URL}/upgrade?email=${usuario_logueado}`, {
-                method: "POST"
-            });
-
-            msg.innerHTML = "✅ Ahora eres PRO 🚀";
-
-            cargarPerfil();
-
-        } catch (e) {
-            msg.innerHTML = "❌ Error en el pago";
-        }
-
-    }, 2000);
+    document.getElementById("login_msg").innerText = JSON.stringify(data);
 }
 
-// 🔍 BUSCAR
+// BUSCAR
 async function buscar() {
+    const presupuesto = document.getElementById("presupuesto").value;
+    const tipo = document.getElementById("tipo").value;
 
-    let presupuesto = document.getElementById("presupuesto").value;
-    let tipo = document.getElementById("tipo").value;
+    const res = await fetch(`${API_URL}/recomendar?presupuesto=${presupuesto}&tipo=${tipo}&email=${usuario_logueado}`);
+    const data = await res.json();
 
-    let resultados = document.getElementById("resultados");
-    let error = document.getElementById("error");
-    let uso = document.getElementById("uso");
-
-    resultados.innerHTML = "";
-    error.innerHTML = "";
-    uso.innerHTML = "";
-
-    if (!usuario_logueado) {
-        error.innerHTML = "Debes iniciar sesión primero";
-        return;
-    }
-
-    try {
-        let res = await fetch(`${API_URL}/recomendar?presupuesto=${presupuesto}&tipo=${tipo}&email=${usuario_logueado}`);
-        let data = await res.json();
-
-        if (data.error) {
-            error.innerHTML = data.error;
-            return;
-        }
-
-        if (data.plan === "free") {
-            uso.innerHTML = `Consultas: ${data.consultas_usadas}/3`;
-        } else {
-            uso.innerHTML = "🚀 Usuario PRO";
-        }
-
-        data.recomendaciones.forEach(d => {
-            resultados.innerHTML += `
-                <div class="resultado">
-                    <b>${d.ciudad}</b> (${d.pais})<br>
-                    Precio: ${d.precio_vuelo}€
-                </div>
-            `;
-        });
-
-        cargarPerfil();
-
-    } catch (e) {
-        error.innerHTML = "Error conectando con el servidor";
-    }
+    document.getElementById("resultados").innerText = JSON.stringify(data, null, 2);
 }
 
 </script>
