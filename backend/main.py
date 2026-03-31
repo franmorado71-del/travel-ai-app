@@ -31,19 +31,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 🔥 👉 SERVIR FRONTEND (VERSIÓN ROBUSTA PARA RENDER)
+# 🔥 👉 SERVIR FRONTEND (RUTA FIJA PARA RENDER - DEFINITIVO)
 @app.get("/")
 def home():
-    ruta = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend", "index.html"))
-
-    # 👉 Debug útil si falla
-    if not os.path.exists(ruta):
-        return {
-            "error": "Frontend no encontrado",
-            "ruta_buscada": ruta
-        }
-
-    return FileResponse(ruta)
+    return FileResponse("/opt/render/project/src/frontend/index.html")
 
 
 # 🔥 FUNCIÓN PARA OBTENER PLAN DEL USUARIO
